@@ -14,16 +14,20 @@ function createChannel() {
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       response.end(`<!doctype html><html lang="zh"><title>渠道剧集</title><h1>分集状态</h1>
       <label>地区<select id="region"><option value="east">华东</option><option value="west">西部</option></select></label>
+      <button id="pin">固定版次</button><span id="pin-state" data-pinned=""></span>
       <p id="edition"></p><div id="viewport" style="height:160px;overflow:auto;border:1px solid"><div style="height:1200px;position:relative"><section id="rows" style="position:sticky;top:0"></section></div></div>
       <pre id="detail"></pre><p id="status"></p><script>
-      let edition='',region='east',total=0;const rows=document.querySelector('#rows');
+      let edition='',pinnedEdition='',region='east',total=0;const rows=document.querySelector('#rows');
       for(let n=0;n<2;n++){let node=document.createElement('article');node.innerHTML='<span></span><button>展开</button>';rows.append(node);}
+      document.querySelector('#pin').onclick=async()=>{const result=await fetch('/api/pin',{method:'POST'});if(!result.ok)return;
+      const body=await result.json();pinnedEdition=body.edition;
+      const state=document.querySelector('#pin-state');state.dataset.pinned=pinnedEdition;state.textContent='已固定 '+pinnedEdition;render();};
       async function render(){const offset=Math.min(Math.floor(document.querySelector('#viewport').scrollTop/80),Math.max(0,total-2));
-      const result=await fetch('/api/list?'+new URLSearchParams({edition,region,offset}));const body=await result.json();
+      const result=await fetch('/api/list?'+new URLSearchParams({edition:pinnedEdition||edition,region,offset}));const body=await result.json();
       if(!result.ok){document.querySelector('#status').textContent=body.error;return;}edition=body.edition;total=body.total;
       document.querySelector('#edition').textContent=edition;rows.dataset.total=total;rows.dataset.offset=offset;
       [...rows.children].forEach((node,n)=>{const item=body.items[n];node.hidden=!item;if(!item)return;node.dataset.id=item.id;node.dataset.region=region;node.dataset.edition=edition;node.querySelector('span').textContent=item.title;
-      node.querySelector('button').onclick=async()=>{const result=await fetch('/api/episodes?'+new URLSearchParams({edition,region,id:item.id}));const data=await result.json();document.querySelector('#detail').textContent=JSON.stringify(data);};});}
+      node.querySelector('button').onclick=async()=>{const result=await fetch('/api/episodes?'+new URLSearchParams({edition:pinnedEdition||edition,region,id:item.id}));const data=await result.json();document.querySelector('#detail').textContent=JSON.stringify(data);};});}
       document.querySelector('#viewport').onscroll=()=>render();document.querySelector('#region').onchange=()=>{region=document.querySelector('#region').value;document.querySelector('#viewport').scrollTop=0;render();};render();
       </script></html>`);
       return;
@@ -31,6 +35,11 @@ function createChannel() {
     const edition = url.searchParams.get('edition') || state.edition;
     const region = url.searchParams.get('region') || 'east';
     const send = (status, payload) => { response.writeHead(status, { 'Content-Type': 'application/json' }); response.end(JSON.stringify(payload)); };
+    // 本轮浏览固定一个数据版次：之后所有筛选/展开都携带该版次，版次一旦失效即 410，不返回新版次数据。
+    if (url.pathname === '/api/pin' && request.method === 'POST') {
+      send(200, { edition: state.edition });
+      return;
+    }
     if (state.expired.has(edition) || edition !== state.edition) { send(410, { error: 'edition_expired', edition }); return; }
     if (!state.regions[region]) { send(404, { error: 'unknown_region' }); return; }
     if (url.pathname === '/api/list') {
