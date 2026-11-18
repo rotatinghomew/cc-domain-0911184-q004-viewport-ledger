@@ -9,6 +9,20 @@ const { visibleRows, exportVisible } = require('../capture/visible.cjs');
 const { Ledger } = require('../capture/ledger.cjs');
 const { sourceRow, sameSource } = require('../capture/identity.cjs');
 
+test('the channel source can reuse an explicitly assigned listener port', async () => {
+  const first = createChannel();
+  const address = await first.start();
+  const port = Number(new URL(address).port);
+  await first.close();
+  const second = createChannel();
+  try {
+    assert.equal(await second.start(port), address);
+    assert.equal((await fetch(address)).status, 200);
+  } finally {
+    await second.close();
+  }
+});
+
 test('source row identity includes region independently of display text', () => {
   const row = sourceRow({ source_id: 'a', region: 'east', edition: 'v1', title: ' 归途 ' });
   assert.equal(row.title, '归途');
