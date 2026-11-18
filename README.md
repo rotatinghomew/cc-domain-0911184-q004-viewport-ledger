@@ -4,7 +4,7 @@
 
 ## 运行环境
 
-Node.js 22.23.4、Playwright 1.56.1 与配套 Chromium。容器已预装全部依赖和浏览器；不要在运行时下载浏览器。裸机可先 npm ci，再用已安装的 Chromium；标准验收使用下述容器。
+Node.js 22.x、Playwright 1.56.1 与配套 Chromium。容器构建时按锁文件安装依赖，官方基础镜像已包含浏览器；运行时不下载浏览器。裸机先 npm ci，并用 npx playwright install --with-deps chromium 准备配套浏览器；标准验收使用下述容器。
 
 ## 本地运行
 
@@ -19,10 +19,10 @@ npm run demo
 
 npm start 持续运行本地来源服务，使用 PORT 指定环回端口（默认 3000），Ctrl-C 退出；npm run demo 执行一次采集并回收服务。
 
-本地需已存在 `ccusr/browser-runtime:1.56.1-20261110` 镜像。构建不下载依赖，运行只访问容器内环回服务。
+使用公开的 `mcr.microsoft.com/playwright:v1.56.1-noble` 镜像；首次构建需要访问镜像仓库和 npm 官方源，运行只访问容器内环回服务，无需私有基础镜像。
 
 ```sh
-docker build --network=none -t viewport-ledger:local .
+docker build -t viewport-ledger:local .
 docker run --rm --network=none viewport-ledger:local
 docker run --rm --network=none viewport-ledger:local npm test
 ```
