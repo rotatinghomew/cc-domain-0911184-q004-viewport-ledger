@@ -1,0 +1,17 @@
+{
+  "name": "viewport-ledger",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "start": "node demo.cjs",
+    "build": "node --check demo.cjs"
+  },
+  "dependencies": {
+    "playwright": "1.56.1"
+  }
+}
