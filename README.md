@@ -16,7 +16,7 @@ npm start
 
 ## 容器运行
 
-本地需已存在 `ccusr/claude-project:2.1.319-playwright1.56.1-20261110` 镜像。构建不下载依赖，运行只访问容器内环回服务。
+本地需已存在 `ccusr/browser-runtime:1.56.1-20261110` 镜像。构建不下载依赖，运行只访问容器内环回服务。
 
 ```sh
 docker build --network=none -t viewport-ledger:local .
