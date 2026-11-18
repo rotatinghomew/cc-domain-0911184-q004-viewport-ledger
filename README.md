@@ -12,9 +12,12 @@ Node.js 22.23.4、Playwright 1.56.1 与配套 Chromium。容器已预装全部�
 npm test
 npm run build
 npm start
+npm run demo
 ```
 
 ## 容器运行
+
+npm start 持续运行本地来源服务，使用 PORT 指定环回端口（默认 3000），Ctrl-C 退出；npm run demo 执行一次采集并回收服务。
 
 本地需已存在 `ccusr/browser-runtime:1.56.1-20261110` 镜像。构建不下载依赖，运行只访问容器内环回服务。
 

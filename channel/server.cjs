@@ -45,7 +45,7 @@ function createChannel() {
     } else send(404, { error: 'not_found' });
   });
   return { state,
-    async start() { await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); return `http://127.0.0.1:${server.address().port}`; },
+    async start(port = 0) { await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve); }); return `http://127.0.0.1:${server.address().port}`; },
     async close() { await new Promise(resolve => server.close(resolve)); },
   };
 }
